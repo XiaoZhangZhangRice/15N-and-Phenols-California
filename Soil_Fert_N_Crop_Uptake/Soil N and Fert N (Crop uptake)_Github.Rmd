@@ -1,0 +1,328 @@
+---
+title: "Soil N and Fert N Analysis"
+author: "Zhang Zhenglin"
+output:
+  pdf_document:
+    toc: yes
+  html_notebook:
+    toc: yes
+    toc_float: yes
+editor_options:
+  markdown:
+    wrap: sentence
+---
+
+# Necessary libraries
+
+```{r echo=FALSE,message=FALSE,warning=FALSE}
+library(knitr)
+library(ggplot2)
+theme_set(theme_bw())
+library(emmeans)
+library(multcomp)
+library(PLS205)
+library(lme4)
+library(lmerTest)
+library(multcompView)
+library(car)
+library(Rmisc) 
+library(dplyr) #https://r4ds.had.co.nz/ (Chapter 3, Chapter 5, look at filter and select)
+# https://bookdown.org/ansellbr/WEHI_tidyR_course_book/
+library(stringr) 
+library(data.table)
+library(GGally)
+library(formatR)
+library(readxl)
+library(mgcv)
+
+```
+
+# Data Organisation
+
+## Read from excel
+
+```{r}
+all_data <- read_excel("15N_N_Uptake_MaturitySummed.xlsx", sheet = 1)
+str(all_data)
+```
+
+## Clean up variables
+
+```{r}
+all_data <- mutate_if(all_data, is.character, as.factor)
+all_data$Blk <- as.factor(all_data$Blk)
+all_data$Year <- as.factor(all_data$Year)
+
+str(all_data)
+```
+
+## Sub dataset for "preplant" and "topdress"
+
+```{r}
+preplant <- all_data %>% filter(Topdress == "N")
+str(preplant)
+
+topdress <- all_data %>% filter(Topdress == "Y")
+str(topdress)
+```
+# Initial look 
+
+## Year interaction
+
+```{r}
+soil_N_try <- lm(soil_N~Field*Year+Stage, data = preplant)
+anova(soil_N_try)
+
+fert_N_try <- lm(fertiliser_N~Field*Year+Stage, data = preplant)
+anova(fert_N_try)
+```
+
+> Seems that only field has a very strong effect. Days expected to be very strong as N uptake will increase over time.
+
+## Visualisation
+
+```{r}
+ggplot(preplant, aes(x = Days, y = soil_N, color = Field)) +
+  geom_smooth(method = gam) +
+  labs(x = "Days", y = "Soil N uptake", color = "Field", linetype = "Year") +
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  theme_minimal()
+```
+
+# Preplant Soil N
+
+## Remove day 0
+
+```{r}
+preplant_no0 <-subset(preplant, Days != 0)
+
+str(preplant_no0)
+```
+
+
+## Model selection and testing
+
+```{r}
+preplant_soil_N_model <- lm(soil_N~Field*Stage, data = preplant_no0)
+
+pls205_diagnostics(preplant_soil_N_model)
+```
+
+```{r}
+preplant_soil_N_means = emmeans(preplant_soil_N_model,spec = 'Field',by = 'Stage')
+preplant_soil_N_effects = contrast(preplant_soil_N_means, method = 'pairwise', adjust = "tukey")
+
+summary(preplant_soil_N_effects)
+cld(preplant_soil_N_means)
+```
+
+## Graphing preplant soil_N mean and SD
+
+```{r}
+preplant_soilN_graphing <- preplant_no0 %>% group_by(Field, Days_graph) %>%  
+  mutate(soil_N_sd = sd(soil_N)) %>%   
+  summarise(soil_N = mean(soil_N),
+            soil_N_sd = mean(soil_N_sd))
+```
+
+```{r}
+preplant_soil_N_graph <-
+ggplot(preplant_no0, aes(x=Days_graph, y=soil_N, color=Field))+
+  geom_point(data=preplant_soilN_graphing, size=2.5)+
+  geom_smooth(method = lm, alpha=0.2)+
+  scale_color_manual(values=c("#0072B2","#FFCC66"), name = "Field", labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
+  scale_x_continuous(name="Days after seeding", limits = c(20, 140), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
+  scale_y_continuous(name=expression("Soil N uptake (kgN ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
+  geom_errorbar(data=preplant_soilN_graphing, aes(ymin=soil_N-soil_N_sd, ymax=soil_N+soil_N_sd), width=3)+
+  #geom_vline(xintercept = c(41, 50, 78, 84, 121, 136), linetype = "dashed", color = "black") +
+  theme_classic()+theme(axis.text = element_text(size = 12), axis.title = element_text(size=14))+
+  theme(legend.text = element_text(size = 12),legend.title = element_text(size = 14))+  
+  ggtitle("Preplant soil N uptake")+
+  theme(plot.title = element_text(hjust = 0.5, size = 15))+
+  annotate(
+  "text",
+  x = c(46,81, 127),  # X-axis positions for annotations
+  y = c(75,100, 120),  # Y-axis positions for annotations
+  label = "*",
+  size = 8,
+  vjust = 0  # Adjust vertical position of asterisks
+)
+
+preplant_soil_N_graph
+
+ggsave(preplant_soil_N_graph, filename = "preplant_soil_N_graph.png", height = 15, width = 20, units = "cm", dpi = 1000)
+```
+
+
+# Preplant Fert N
+
+## Model selection and testing
+
+```{r}
+preplant_fert_N_model_huehue <- lm(fertiliser_N~Field*Stage+Year, data = preplant_no0)
+
+preplant_fert_N_model <- lm(fertiliser_N~Field*Stage, data = preplant_no0)
+pls205_diagnostics(preplant_fert_N_model)
+```
+
+```{r}
+preplant_fert_N_means = emmeans(preplant_fert_N_model,spec = 'Field',by = 'Stage')
+preplant_fert_N_effects = contrast(preplant_fert_N_means, method = 'pairwise', adjust = "tukey")
+
+summary(preplant_fert_N_effects)
+cld(preplant_fert_N_means)
+```
+
+
+## Graphing preplant fert_N mean and SD
+
+```{r}
+preplant_fertiliser_N_graphing <- preplant_no0 %>% group_by(Field, Days_graph) %>%  
+  mutate(fertiliser_N_sd = sd(fertiliser_N)) %>%   
+  summarise(fertiliser_N = mean(fertiliser_N),
+            fertiliser_N_sd = mean(fertiliser_N_sd))
+```
+
+```{r}
+preplant_fertiliser_N_graph <-
+ggplot(preplant_no0, aes(x=Days_graph, y=fertiliser_N, color=Field))+
+  geom_point(data=preplant_fertiliser_N_graphing, size=2.5)+
+  geom_smooth(method = lm, alpha=0.2)+
+  scale_color_manual(values=c("#0072B2","#FFCC66"), name = "Field", labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
+  scale_x_continuous(name="Days after seeding", limits = c(20, 140), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
+  scale_y_continuous(name=expression("Fertilizer N uptake (kgN ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
+  geom_errorbar(data=preplant_fertiliser_N_graphing, aes(ymin=fertiliser_N-fertiliser_N_sd, ymax=fertiliser_N+fertiliser_N_sd), width=3,position=position_dodge(0.5))+
+  #geom_vline(xintercept = c(41, 50, 78, 84, 121, 136), linetype = "dashed", color = "black") +
+  theme_classic()+
+  theme(axis.text = element_text(size = 12), axis.title = element_text(size=14))+
+  theme(legend.text = element_text(size = 12),legend.title = element_text(size = 14))+
+  ggtitle("Preplant fertilizer N uptake")+
+  theme(plot.title = element_text(hjust = 0.5, size = 15))
+
+preplant_fertiliser_N_graph
+
+ggsave(preplant_fertiliser_N_graph, filename = "preplant_fertiliser_N_graph.png", height = 15, width = 20, units = "cm", dpi=1000)
+```
+
+# Topdress Soil N
+
+## Remove day 0
+
+```{r}
+topdress_no0 <-subset(topdress, Days != 0)
+
+str(topdress_no0)
+```
+
+## Model selection and testing
+
+```{r}
+topdress_soil_N_model <- lm(soil_N~Field*Stage, data = topdress_no0)
+
+pls205_diagnostics(topdress_soil_N_model)
+```
+
+```{r}
+topdress_soil_N_means = emmeans(topdress_soil_N_model,spec = 'Field',by = 'Stage')
+topdress_soil_N_effects = contrast(topdress_soil_N_means, method = 'pairwise', adjust = "tukey")
+
+summary(topdress_soil_N_effects)
+cld(topdress_soil_N_means)
+```
+
+
+## Graphing topdress soil_N mean and SD
+
+```{r}
+topdress_soil_N_graphing <- topdress_no0 %>% group_by(Field, Days_graph) %>%  
+  mutate(soil_N_sd = sd(soil_N)) %>%   
+  summarise(soil_N = mean(soil_N),
+            soil_N_sd = mean(soil_N_sd))
+```
+
+```{r}
+topdress_soil_N_graph <-
+ggplot(topdress_no0, aes(x=Days_graph, y=soil_N, color=Field))+
+  geom_point(data=topdress_soil_N_graphing, size=2.5)+
+  geom_smooth(method = lm, alpha=0.2)+
+  scale_color_manual(values=c("#0072B2","#FFCC66"), name = "Field", labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
+  scale_x_continuous(name="Days after seeding", limits = c(60, 140), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
+  scale_y_continuous(name=expression("Soil N uptake (kgN ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
+  geom_errorbar(data=topdress_soil_N_graphing, aes(ymin=soil_N-soil_N_sd, ymax=soil_N+soil_N_sd), width=3,position=position_dodge(00))+
+  #geom_vline(xintercept = c(78, 84, 121, 136), linetype = "dashed", color = "black") +
+  theme_classic()+
+  theme(axis.text = element_text(size = 12), axis.title = element_text(size=14))+
+  theme(legend.text = element_text(size = 12),legend.title = element_text(size = 14))+
+  ggtitle("Topdress soil N uptake")+
+  theme(plot.title = element_text(hjust = 0.5, size = 15))+
+  annotate(
+  "text",
+  x = c(81, 127),  # X-axis positions for annotations
+  y = c(87, 110),  # Y-axis positions for annotations
+  label = "*",
+  size = 8,
+  vjust = 0  # Adjust vertical position of asterisks
+)
+
+
+topdress_soil_N_graph
+
+ggsave(topdress_soil_N_graph, filename = "topdress_soil_N_graph.png", height = 15, width = 20, units = "cm", dpi = 1000)
+```
+
+# Topdress Fert N
+
+## Model selection and testing
+
+```{r}
+topdress_fert_N_model <- lm(fertiliser_N~Field*Stage, data = topdress_no0)
+
+pls205_diagnostics(topdress_fert_N_model)
+```
+
+```{r}
+topdress_fert_N_means = emmeans(topdress_fert_N_model,spec = 'Field',by = 'Stage')
+topdress_fert_N_effects = contrast(topdress_fert_N_means, method = 'pairwise', adjust = "tukey")
+
+summary(topdress_fert_N_effects)
+cld(topdress_fert_N_means)
+```
+
+## Graphing topdress fert_N mean and SD
+
+```{r}
+topdress_fertiliser_N_graphing <- topdress_no0 %>% group_by(Field, Days_graph) %>%  
+  mutate(fertiliser_N_sd = sd(fertiliser_N)) %>%   
+  summarise(fertiliser_N = mean(fertiliser_N),
+            fertiliser_N_sd = mean(fertiliser_N_sd))
+```
+
+```{r}
+topdress_fertiliser_N_graph <-
+ggplot(topdress_no0, aes(x=Days_graph, y=fertiliser_N, color=Field))+
+  geom_point(data=topdress_fertiliser_N_graphing, size=2.5)+
+  geom_smooth(method = lm, alpha=0.2)+
+  scale_color_manual(values=c("#0072B2","#FFCC66"), name = "Field", labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
+  scale_x_continuous(name="Days after seeding", limits = c(60, 140), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
+  scale_y_continuous(name=expression("Fertilizer N uptake (kgN ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
+  geom_errorbar(data=topdress_fertiliser_N_graphing, aes(ymin=fertiliser_N-fertiliser_N_sd, ymax=fertiliser_N+fertiliser_N_sd), width=3,position=position_dodge(0.5))+
+  #geom_vline(xintercept = c(78, 84, 121, 136), linetype = "dashed", color = "black") +
+  theme_classic()+
+  theme(axis.text = element_text(size = 12), axis.title = element_text(size=14))+
+  theme(legend.text = element_text(size = 12),legend.title = element_text(size = 14))+
+  ggtitle("Topdress fertilizer N uptake")+
+  theme(plot.title = element_text(hjust = 0.5, size = 15))+
+  annotate(
+  "text",
+  x = c(81, 127),  # X-axis positions for annotations
+  y = c(15, 15),  # Y-axis positions for annotations
+  label = "*",
+  size = 8,
+  vjust = 0  # Adjust vertical position of asterisks
+)
+
+topdress_fertiliser_N_graph
+
+ggsave(topdress_fertiliser_N_graph, filename = "topdress_fertiliser_N_graph.png", height = 15, width = 20, units = "cm")
+```
+

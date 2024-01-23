@@ -1,0 +1,213 @@
+---
+title: "Yield Analysis"
+author: "Zhang Zhenglin"
+output:
+  pdf_document:
+    toc: yes
+  html_notebook:
+    toc: yes
+    toc_float: yes
+editor_options:
+  markdown:
+    wrap: sentence
+---
+
+# Necessary libraries
+
+```{r echo=FALSE,message=FALSE,warning=FALSE}
+library(knitr)
+library(ggplot2)
+theme_set(theme_bw())
+library(emmeans)
+library(multcomp)
+library(PLS205)
+library(lme4)
+library(lmerTest)
+library(multcompView)
+library(car)
+library(Rmisc) 
+library(dplyr) #https://r4ds.had.co.nz/ (Chapter 3, Chapter 5, look at filter and select)
+# https://bookdown.org/ansellbr/WEHI_tidyR_course_book/
+library(stringr) 
+library(data.table)
+library(GGally)
+library(formatR)
+library(readxl)
+
+```
+
+# Data Organisation
+
+## Read from excel
+
+```{r}
+yield <- read_excel("Yield_15N.xlsx", sheet = 1)
+str(yield)
+```
+
+## Change variable type
+
+```{r}
+yield$Plot <- as.factor(yield$Plot)
+yield$Field <- as.factor(yield$Field)
+yield$Blk <- as.factor(yield$Blk)
+yield$TopDress <- as.factor(yield$TopDress)
+yield$Year <- as.factor(yield$Year)
+
+str(yield)
+```
+
+## Sub dataset for "preplant" and "topdress"
+
+```{r}
+preplant <- yield %>% filter(TopDress == "N")
+str(preplant)
+
+topdress <- yield %>% filter(TopDress == "Y")
+str(topdress)
+```
+
+# Initial Visualisation
+
+```{r}
+ggplot(preplant, aes(y=Yield, x=Field, color=Year)) + geom_boxplot()
+
+ggplot(topdress, aes(y=Yield, x=Field, color=Year)) + geom_boxplot()
+```
+
+# Preplant
+
+## Comparision by treatment and year
+
+```{r}
+preplant_model <- lm(Yield~Field*Year, data=preplant)
+anova(preplant_model)
+pls205_diagnostics(preplant_model)
+```
+
+> Year effect significant.
+> Model assumptions look satisfied.
+
+
+```{r}
+preplant_means <- emmeans(preplant_model, spec ='Field', by = 'Year')
+preplant_effects <- contrast(preplant_means, method = 'pairwise', adjust = "tukey")
+summary(preplant_effects)
+cld(preplant_means)
+```
+
+## Graphing
+
+Create dataframe for error bars
+
+```{r}
+preplant_graphing <- preplant %>% group_by(Field, Year) %>% 
+   mutate(yield_sd = sd(Yield)) %>% 
+  summarise(Yield = mean(Yield),
+            yield_sd = mean(yield_sd))
+```
+
+```{r}
+
+preplant_yield_graph <-
+  ggplot(preplant_graphing, aes(x = Year, y = Yield, fill = Field)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  labs(x = "Year", y = "Yield", fill = "Field") +
+  scale_fill_manual(values = c("#0072B2","#FFCC66"),labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
+  geom_errorbar(aes(ymin=Yield-yield_sd, ymax=Yield+yield_sd), width=.2,position=position_dodge(0.7))+
+  scale_y_continuous(name=expression("Yield (Mg ha"^{-1}*")"), limits = c(0, 20), expand = c(0, 0))+
+  scale_x_discrete(name="")+
+  theme_classic()+
+  theme(axis.text = element_text(size = 12), axis.title = element_text(size=14))+
+  theme(legend.text = element_text(size = 12),legend.title = element_text(size = 14))+
+  annotate(
+  "text",
+  x = c(1,2),  # X-axis positions for annotations
+  y = c(15.7,13),  # Y-axis positions for annotations
+  label = "*",
+  size = 12,
+  vjust = 0  # Adjust vertical position of asterisks
+)+
+  annotate(
+  "text",
+  x = c(1.45),  # X-axis positions for annotations
+  y = c(19.1),  # Y-axis positions for annotations
+  label = "Preplant",
+  size = 7,
+  vjust = 0  
+)
+
+preplant_yield_graph
+```
+
+```{r}
+ggsave(preplant_yield_graph, filename = "preplant_yield_graph.png", height = 15, width = 20, units = "cm", dpi=1000)
+```
+
+# TopDress
+
+## Comparison by treatment
+
+```{r}
+topdress_model <- lm(Yield~Field*Year, data=topdress)
+anova(topdress_model)
+pls205_diagnostics(topdress_model)
+```
+
+> Year significant.
+
+```{r}
+topdress_means <- emmeans(topdress_model, spec ='Field', by = 'Year')
+topdress_effects <- contrast(topdress_means, method = 'pairwise', adjust = "tukey")
+summary(topdress_effects)
+cld(topdress_means)
+```
+
+## Graphing
+
+Create graphing dataframe
+
+```{r}
+topdress_graphing <- topdress %>% group_by(Field, Year) %>% 
+   mutate(yield_sd = sd(Yield)) %>% 
+  summarise(Yield = mean(Yield),
+            yield_sd = mean(yield_sd))
+```
+
+```{r}
+topdress_yield_graph <-
+  ggplot(topdress_graphing, aes(x = Year, y = Yield, fill = Field)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  labs(x = "Year", y = "Yield", fill = "Field") +
+  scale_fill_manual(values = c("#0072B2","#FFCC66"),labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
+  geom_errorbar(aes(ymin=Yield-yield_sd, ymax=Yield+yield_sd), width=.2,position=position_dodge(0.7))+
+  scale_y_continuous(name=expression("Yield (Mg ha"^{-1}*")"), limits = c(0, 20), expand = c(0, 0))+
+  scale_x_discrete(name="")+
+  theme_classic()+
+  theme(axis.text = element_text(size = 12), axis.title = element_text(size=14))+
+  theme(legend.text = element_text(size = 12),legend.title = element_text(size = 14))+
+  annotate(
+  "text",
+  x = c(2),  # X-axis positions for annotations
+  y = c(11),  # Y-axis positions for annotations
+  label = "*",
+  size = 12,
+  vjust = 0  # Adjust vertical position of asterisks
+)+
+  annotate(
+  "text",
+  x = c(1.45),  # X-axis positions for annotations
+  y = c(19.1),  # Y-axis positions for annotations
+  label = "Topdress",
+  size = 7,
+  vjust = 0  
+)
+
+topdress_yield_graph
+```
+
+
+```{r}
+ggsave(topdress_yield_graph, filename = "topdress_yield_graph.png", height = 15, width = 20, units = "cm", dpi=1000)
+```
+

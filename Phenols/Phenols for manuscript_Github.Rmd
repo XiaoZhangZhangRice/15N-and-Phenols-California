@@ -1,0 +1,273 @@
+---
+title: "Phenols for manuscript"
+author: "Zhang Zhenglin"
+output:
+  pdf_document:
+    toc: yes
+  html_notebook:
+    toc: yes
+    toc_float: yes
+editor_options:
+  markdown:
+    wrap: sentence
+---
+
+# Necessary libraries
+
+```{r echo=FALSE,message=FALSE,warning=FALSE}
+library(knitr)
+library(rlang)
+library(ggplot2)
+theme_set(theme_bw())
+library(emmeans)
+library(multcomp)
+library(PLS205)
+library(lme4)
+library(lmerTest)
+library(multcompView)
+library(car)
+library(Rmisc) 
+library(dplyr) #https://r4ds.had.co.nz/ (Chapter 3, Chapter 5, look at filter and select)
+# https://bookdown.org/ansellbr/WEHI_tidyR_course_book/
+library(stringr) 
+library(data.table)
+library(GGally)
+library(formatR)
+library(readxl)
+library(mgcv)
+
+```
+
+# Data Organisation
+
+## Read from excel
+
+```{r}
+phenols_master <- read_excel("ForR_Phenols (24 July - OC content added).xlsx", sheet = 1)
+phenols_master <- mutate_if(phenols_master, is.character, as.factor)
+phenols_master$Year <- as.factor(phenols_master$Year)
+phenols_master$Total_phenols <- phenols_master$TotalP+phenols_master$TotalV+phenols_master$TotalC+phenols_master$TotalS
+
+str(phenols_master)
+```
+
+## Sub dataset for "RES" and "Growers"
+
+```{r}
+RES <- phenols_master %>% filter (Study == "RES")
+str(RES)
+
+Growers <- phenols_master %>% filter(Study == "Grower")
+str(Growers)
+```
+
+# Initial visualisation for all phenols
+
+```{r}
+ggplot(phenols_master, aes(y=Total_phenols, x=Site, color=Field))+ 
+  geom_boxplot()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size= 9))
+```
+
+# Inital model to get a sensing
+
+> Not much year effect
+
+```{r}
+phenols_sensing_model <- lm(Total_phenols ~ Field*Year, data=phenols_master)
+pls205_diagnostics(phenols_sensing_model)
+anova(phenols_sensing_model)
+```
+
+
+# RES only statistical tests
+
+```{r}
+Total_P_RES <- lmer(TotalP ~ Field+(1|Site), data=RES)
+Total_P_means_RES <- emmeans(Total_P_RES, spec ='Field')
+Total_P_effects_RES <- contrast(Total_P_means_RES, method = 'pairwise', adjust = "tukey")
+summary(Total_P_effects_RES)
+
+Total_V_RES <- lmer(TotalV ~ Field+(1|Site), data=RES)
+Total_V_means_RES <- emmeans(Total_V_RES, spec ='Field')
+Total_V_effects_RES <- contrast(Total_V_means_RES, method = 'pairwise', adjust = "tukey")
+summary(Total_V_effects_RES)
+
+Total_C_RES <- lmer(TotalC ~ Field+(1|Site), data=RES)
+Total_C_means_RES <- emmeans(Total_C_RES, spec ='Field')
+Total_C_effects_RES <- contrast(Total_C_means_RES, method = 'pairwise', adjust = "tukey")
+summary(Total_C_effects_RES)
+
+Total_S_RES <- lmer(TotalS ~ Field+(1|Site), data=RES)
+Total_S_means_RES <- emmeans(Total_S_RES, spec ='Field')
+Total_S_effects_RES <- contrast(Total_S_means_RES, method = 'pairwise', adjust = "tukey")
+summary(Total_S_effects_RES)
+
+Total_phenols_RES <- lmer(Total_phenols ~ Field+(1|Site), data=RES)
+Total_phenols_means_RES <- emmeans(Total_phenols_RES, spec ='Field')
+Total_phenols_effects_RES <- contrast(Total_phenols_means_RES, method = 'pairwise', adjust = "tukey")
+summary(Total_phenols_effects_RES)
+```
+
+# Growers' only statistical tests
+
+```{r}
+Total_P_Growers <- lmer(TotalP ~ Field+(1|Site), data=Growers)
+Total_P_means_Growers <- emmeans(Total_P_Growers, spec ='Field')
+Total_P_effects_Growers <- contrast(Total_P_means_Growers, method = 'pairwise', adjust = "tukey")
+summary(Total_P_effects_Growers)
+
+Total_V_Growers <- lmer(TotalV ~ Field+(1|Site), data=Growers)
+Total_V_means_Growers <- emmeans(Total_V_Growers, spec ='Field')
+Total_V_effects_Growers <- contrast(Total_V_means_Growers, method = 'pairwise', adjust = "tukey")
+summary(Total_V_effects_Growers)
+
+Total_C_Growers <- lmer(TotalC ~ Field+(1|Site), data=Growers)
+Total_C_means_Growers <- emmeans(Total_C_Growers, spec ='Field')
+Total_C_effects_Growers <- contrast(Total_C_means_Growers, method = 'pairwise', adjust = "tukey")
+summary(Total_C_effects_Growers)
+
+Total_S_Growers <- lmer(TotalS ~ Field+(1|Site), data=Growers)
+Total_S_means_Growers <- emmeans(Total_S_Growers, spec ='Field')
+Total_S_effects_Growers <- contrast(Total_S_means_Growers, method = 'pairwise', adjust = "tukey")
+summary(Total_S_effects_Growers)
+
+Total_phenols_Growers <- lmer(Total_phenols ~ Field+(1|Site), data=Growers)
+Total_phenols_means_Growers <- emmeans(Total_phenols_Growers, spec ='Field')
+Total_phenols_effects_Growers <- contrast(Total_phenols_means_Growers, method = 'pairwise', adjust = "tukey")
+summary(Total_phenols_effects_Growers)
+```
+
+# Create graphing data frame
+
+```{r}
+manuscript_graphing <- 
+  phenols_master %>% group_by(Field, Study) %>%
+  mutate(Total_phenols_sd = sd(Total_phenols), 
+         TotalP_sd = sd(TotalP),
+         TotalV_sd = sd(TotalV),
+         TotalC_sd = sd(TotalC),
+         TotalS_sd = sd(TotalS)) %>%   
+  summarise(Total_phenols = mean(Total_phenols),
+            Total_phenols_sd = mean(Total_phenols_sd),
+            TotalP = mean(TotalP),
+            TotalP_sd = mean(TotalP_sd),
+            TotalV = mean(TotalV),
+            TotalV_sd = mean(TotalV_sd),
+            TotalC = mean(TotalC),
+            TotalC_sd = mean(TotalC_sd),
+            TotalS = mean(TotalS),
+            TotalS_sd = mean(TotalS_sd))  
+
+write.csv(manuscript_graphing, "manuscript_graphing_11_Jan_2024.csv", row.names = TRUE)
+```
+
+With the CSV, I manually reorganised the dataframe so that I can plot phenols by type, with each bar graph showing levels for CR and RF respectively. I was just lazy to manually wrangle this in R. It was too much effort for such a simple dataframe lol. 
+
+```{r}
+manuscript_graphing_reorg <- read_excel("Phenols_graphing_manuscript_11Jan2024.xlsx", sheet = 1)
+
+manuscript_graphing_reorg$Type <- str_wrap(manuscript_graphing_reorg$Type, width = 10)
+
+RES_graphing <- manuscript_graphing_reorg %>% filter(Study == "RES")
+str(RES_graphing)
+
+
+Growers_Graphing <- manuscript_graphing_reorg %>% filter(Study == "Grower")
+str(Growers_Graphing)
+
+poster<- Growers_Graphing
+
+```
+
+# Graphing RES
+
+```{r}
+RES_phenols_graph <-
+ggplot(RES_graphing, aes(x = Type, y = Phenols_level, fill = Field)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  labs(x = "Type", y = "Phenols_level", fill = "Field") +
+  scale_fill_manual(values = c("#0072B2","#FFCC66"),labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
+  #geom_errorbar(aes(ymin=Phenols_level-SD, ymax=Phenols_level+SD), width=0.2,position=position_dodge(0.7))+
+  scale_y_continuous(name=expression("Phenols level (mg 100g"^{-1}*" OC)"), limits = c(0,3), expand = c(0, 0))+
+  scale_x_discrete(name="", labels = c("Total phenols", "Cinnamic phenols", "P-hydroxybenzyl phenols", "Syringyl phenols", "Vanillyl phenols"))+
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size= 12))+
+  theme(axis.text.y = element_text(size= 12),axis.title = element_text(size=12))+
+  theme(legend.text = element_text(size = 12),legend.title = element_text(size = 13))+
+    annotate(
+  "text",
+  x = c(1,2,5),  # X-axis positions for annotations
+  y = c(2.1,0.65,0.65),  # Y-axis positions for annotations
+  label = "*",
+  size = 8,
+  vjust = 0  # Adjust vertical position of asterisks
+)+
+  annotate(
+  "text",
+  x = c(3),  # X-axis positions for annotations
+  y = c(2.8),  # Y-axis positions for annotations
+  label = "RES",
+  size = 5,
+  vjust = 0  
+)
+
+ggsave(RES_phenols_graph, filename = "RES_phenols_graph_22Jan2024.png", height = 15, width = 20, units = "cm", dpi=1000)
+
+```
+# Graphing growers' fields
+
+```{r}
+Grower_phenols_graph<-
+ggplot(Growers_Graphing, aes(x = Type, y = Phenols_level, fill = Field)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  labs(x = "Type", y = "Phenols_level", fill = "Field") +
+  scale_fill_manual(values = c("#0072B2","#FFCC66"),labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
+  #geom_errorbar(aes(ymin=Phenols_level-SD, ymax=Phenols_level+SD), width=0.2,position=position_dodge(0.7))+
+  scale_y_continuous(name=expression("Phenols level (mg 100g"^{-1}*" OC)"), limits = c(0,3), expand = c(0, 0))+
+  scale_x_discrete(name="", labels = c("Total phenols", "Cinnamic phenols", "P-hydroxybenzyl phenols", "Syringyl phenols", "Vanillyl phenols"))+
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size= 12))+
+  theme(axis.text.y = element_text(size= 12),axis.title = element_text(size=12))+
+  theme(legend.text = element_text(size = 12),legend.title = element_text(size = 13))+
+    annotate(
+  "text",
+  x = c(1,2,3,4,5),  # X-axis positions for annotations
+  y = c(2.4,0.8,0.3,1,0.7),  # Y-axis positions for annotations
+  label = "*",
+  size = 8,
+  vjust = 0  # Adjust vertical position of asterisks
+)+
+  annotate(
+  "text",
+  x = c(3),  # X-axis positions for annotations
+  y = c(2.8),  # Y-axis positions for annotations
+  label = "Regional survey study",
+  size = 5,
+  vjust = 0  
+)
+
+
+
+ggsave(Grower_phenols_graph, filename = "Growers_phenols_graph_22Jan2024.png", height = 15, width = 20, units = "cm", dpi=1000)
+```
+
+```{r}
+Growers_poster <- manuscript_graphing %>% filter(Study == "Grower")
+
+poster_graph<-
+ggplot(Growers_poster, aes(x = Field, y = Lamda8_Phenols , fill = Field)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  scale_fill_manual(values = c("#0072B2","#FFCC66"))+
+  geom_errorbar(aes(ymin=Lamda8_Phenols-Lamda8_Phenols_sd, ymax=Lamda8_Phenols+Lamda8_Phenols_sd), width=0.2,position=position_dodge(0.0))+
+  scale_y_continuous(name="Phenols level (mg/100mg OC)", limits = c(0,3), expand = c(0, 0))+
+  scale_x_discrete(name="", labels = c("Continuous rice", "Rice after fallow"))+
+  theme_classic() +
+  theme(axis.text = element_text(size = 12), axis.title = element_text(size=14))+
+  theme(legend.text = element_text(size = 12),legend.title = element_text(size = 14))
+
+ggsave(poster_graph, filename = "poster_10Aug.png", height = 15, width = 20, units = "cm")
+
+```
+
+
