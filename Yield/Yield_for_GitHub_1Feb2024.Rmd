@@ -4,9 +4,6 @@ author: "Zhang Zhenglin"
 output:
   pdf_document:
     toc: yes
-  html_notebook:
-    toc: yes
-    toc_float: yes
 editor_options:
   markdown:
     wrap: sentence
@@ -14,7 +11,7 @@ editor_options:
 
 # Necessary libraries
 
-```{r echo=FALSE,message=FALSE,warning=FALSE}
+```{r message=FALSE,warning=FALSE}
 library(knitr)
 library(ggplot2)
 theme_set(theme_bw())
@@ -33,7 +30,6 @@ library(data.table)
 library(GGally)
 library(formatR)
 library(readxl)
-
 ```
 
 # Data Organisation
@@ -70,8 +66,10 @@ str(topdress)
 # Initial Visualisation
 
 ```{r}
+#preplant
 ggplot(preplant, aes(y=Yield, x=Field, color=Year)) + geom_boxplot()
 
+#topdress
 ggplot(topdress, aes(y=Yield, x=Field, color=Year)) + geom_boxplot()
 ```
 
@@ -80,14 +78,11 @@ ggplot(topdress, aes(y=Yield, x=Field, color=Year)) + geom_boxplot()
 ## Comparision by treatment and year
 
 ```{r}
-preplant_model <- lm(Yield~Field*Year, data=preplant)
+preplant_model <- lmer(Yield~Field*Year+(1|Blk), data=preplant)
 anova(preplant_model)
-pls205_diagnostics(preplant_model)
 ```
 
-> Year effect significant.
-> Model assumptions look satisfied.
-
+> All terms significant.
 
 ```{r}
 preplant_means <- emmeans(preplant_model, spec ='Field', by = 'Year')
@@ -95,6 +90,8 @@ preplant_effects <- contrast(preplant_means, method = 'pairwise', adjust = "tuke
 summary(preplant_effects)
 cld(preplant_means)
 ```
+
+> Yield higher for fallow rice in both 2021 and 2022
 
 ## Graphing
 
@@ -108,7 +105,6 @@ preplant_graphing <- preplant %>% group_by(Field, Year) %>%
 ```
 
 ```{r}
-
 preplant_yield_graph <-
   ggplot(preplant_graphing, aes(x = Year, y = Yield, fill = Field)) +
   geom_bar(stat = "identity", position = "dodge", width = 0.7) +
@@ -149,12 +145,11 @@ ggsave(preplant_yield_graph, filename = "preplant_yield_graph.png", height = 15,
 ## Comparison by treatment
 
 ```{r}
-topdress_model <- lm(Yield~Field*Year, data=topdress)
+topdress_model <- lmer(Yield~Field*Year+(1|Blk), data=topdress)
 anova(topdress_model)
-pls205_diagnostics(topdress_model)
 ```
 
-> Year significant.
+> Field effect strongest. Year effect present. Likely some Field:Year interation. 
 
 ```{r}
 topdress_means <- emmeans(topdress_model, spec ='Field', by = 'Year')
@@ -162,6 +157,8 @@ topdress_effects <- contrast(topdress_means, method = 'pairwise', adjust = "tuke
 summary(topdress_effects)
 cld(topdress_means)
 ```
+
+> No difference in 2021, but different in 2022.
 
 ## Graphing
 
