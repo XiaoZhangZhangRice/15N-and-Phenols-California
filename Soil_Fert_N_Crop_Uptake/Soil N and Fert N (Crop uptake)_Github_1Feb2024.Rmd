@@ -129,7 +129,7 @@ preplant_soilN_graphing <- preplant %>% group_by(Field, Days) %>%
 preplant_soil_N_graph <-
 ggplot(preplant, aes(x=Days, y=soil_N, color=Field))+
   geom_point(data=preplant_soilN_graphing, size=2.5)+
-  geom_smooth(method = lm, alpha=0.2)+
+  geom_smooth(method = lm, alpha=0)+
   scale_color_manual(values=c("#0072B2","#FFCC66"), name = "Field", labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
   scale_x_continuous(name="Days after seeding", limits = c(20, 140), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
   scale_y_continuous(name=expression("Soil N uptake (kg N ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
@@ -196,7 +196,7 @@ preplant_fertiliser_N_graphing <- preplant %>% group_by(Field, Days) %>%
 preplant_fertiliser_N_graph <-
 ggplot(preplant, aes(x=Days, y=fertiliser_N, color=Field))+
   geom_point(data=preplant_fertiliser_N_graphing, size=2.5)+
-  geom_smooth(method = lm, alpha=0.2)+
+  geom_smooth(method = lm, alpha=0)+
   scale_color_manual(values=c("#0072B2","#FFCC66"), name = "Field", labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
   scale_x_continuous(name="Days after seeding", limits = c(20, 140), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
   scale_y_continuous(name=expression("Fertilizer N uptake (kg N ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
@@ -262,7 +262,7 @@ topdress_soil_N_graphing <- topdress %>% group_by(Field, Days) %>%
 topdress_soil_N_graph <-
 ggplot(topdress, aes(x=Days, y=soil_N, color=Field))+
   geom_point(data=topdress_soil_N_graphing, size=2.5)+
-  geom_smooth(method = lm, alpha=0.2)+
+  geom_smooth(method = lm, alpha=0)+
   scale_color_manual(values=c("#0072B2","#FFCC66"), name = "Field", labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
   scale_x_continuous(name="Days after seeding", limits = c(60, 140), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
   scale_y_continuous(name=expression("Soil N uptake (kg N ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
@@ -329,7 +329,7 @@ topdress_fertiliser_N_graphing <- topdress %>% group_by(Field, Days) %>%
 topdress_fertiliser_N_graph <-
 ggplot(topdress, aes(x=Days, y=fertiliser_N, color=Field))+
   geom_point(data=topdress_fertiliser_N_graphing, size=2.5)+
-  geom_smooth(method = lm, alpha=0.2)+
+  geom_smooth(method = lm, alpha=0)+
   scale_color_manual(values=c("#0072B2","#FFCC66"), name = "Field", labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
   scale_x_continuous(name="Days after seeding", limits = c(60, 140), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
   scale_y_continuous(name=expression("Fertilizer N uptake (kg N ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
@@ -360,5 +360,13 @@ ggplot(topdress, aes(x=Days, y=fertiliser_N, color=Field))+
 topdress_fertiliser_N_graph
 
 ggsave(topdress_fertiliser_N_graph, filename = "topdress_fertiliser_N_graph.png", height = 15, width = 20, units = "cm")
+```
+
+# Total N uptake
+
+```{r}
+all_data$total_N <- all_data$fertiliser_N + all_data$soil_N
+
+all_data %>% group_by(Topdress, Stage, Field) %>% summarise(total_N = mean(total_N))
 ```
 
