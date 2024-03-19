@@ -76,7 +76,7 @@ mean(preplant_CR$crop_recovery_fert_N_percent)
 
 mean(preplant_CR$soil_recovery_fert_N_percent)
 
-mean(preplant_CR$total_fertN_recovery)
+mean(preplant_CR$total_fertN_recovery_percent)
 ```
 
 ## Fallow Rice
@@ -87,20 +87,41 @@ mean(preplant_RF$crop_recovery_fert_N_percent)
 
 mean(preplant_RF$soil_recovery_fert_N_percent)
 
-mean(preplant_RF$total_fertN_recovery)
+mean(preplant_RF$total_fertN_recovery_percent)
 ```
 
 ## Testing for preplant
 
 ```{r}
-preplant_model <- lmer(total_fertN_recovery~Field*Year+(1|Blk), data = preplant)
+#total FNR
+preplant_total_model <- lmer(total_fertN_recovery_percent~Field*Year+(1|Blk), data = preplant)
 
-anova(preplant_model)
+anova(preplant_total_model)
 
-preplant_means <- emmeans(preplant_model, spec ='Field')
-preplant_effects <- contrast(preplant_means, method = 'pairwise', adjust = "tukey")
-cld(preplant_means)
-summary(preplant_effects)
+preplant_total_means <- emmeans(preplant_total_model, spec ='Field')
+preplant_total_effects <- contrast(preplant_total_means, method = 'pairwise', adjust = "tukey")
+cld(preplant_total_means)
+summary(preplant_total_effects)
+
+#crop FNR
+preplant_crop_model <- lmer(crop_recovery_fert_N_percent~Field*Year+(1|Blk), data = preplant)
+
+anova(preplant_crop_model)
+
+preplant_crop_means <- emmeans(preplant_crop_model, spec ='Field')
+preplant_crop_effects <- contrast(preplant_crop_means, method = 'pairwise', adjust = "tukey")
+cld(preplant_crop_means)
+summary(preplant_crop_effects)
+
+#soil FNR
+preplant_soil_model <- lmer(soil_recovery_fert_N_percent~Field*Year+(1|Blk), data = preplant)
+
+anova(preplant_soil_model)
+
+preplant_soil_means <- emmeans(preplant_soil_model, spec ='Field')
+preplant_soil_effects <- contrast(preplant_soil_means, method = 'pairwise', adjust = "tukey")
+cld(preplant_soil_means)
+summary(preplant_soil_effects)
 ```
 # Topdress FNR
 
@@ -112,7 +133,7 @@ mean(topdress_CR$crop_recovery_fert_N_percent)
 
 mean(topdress_CR$soil_recovery_fert_N_percent)
 
-mean(topdress_CR$total_fertN_recovery)
+mean(topdress_CR$total_fertN_recovery_percent)
 ```
 
 ## Fallow Rice
@@ -123,18 +144,40 @@ mean(topdress_RF$crop_recovery_fert_N_percent)
 
 mean(topdress_RF$soil_recovery_fert_N_percent)
 
-mean(topdress_RF$total_fertN_recovery)
+mean(topdress_RF$total_fertN_recovery_percent)
 ```
 
 ## Testing for topdress
 
+
 ```{r}
-topdress_model <- lmer(total_fertN_recovery~Field*Year+(1|Blk), data = topdress)
+#total FNR
+topdress_total_model <- lmer(total_fertN_recovery_percent~Field*Year+(1|Blk), data = topdress)
 
-anova(topdress_model)
+anova(topdress_total_model)
 
-topdress_means <- emmeans(topdress_model, spec ='Field')
-topdress_effects <- contrast(topdress_means, method = 'pairwise', adjust = "tukey")
-cld(topdress_means)
-summary(topdress_effects)
+topdress_total_means <- emmeans(topdress_total_model, spec ='Field')
+topdress_total_effects <- contrast(topdress_total_means, method = 'pairwise', adjust = "tukey")
+cld(topdress_total_means)
+summary(topdress_total_effects)
+
+#crop FNR
+topdress_crop_model <- lmer(crop_recovery_fert_N_percent~Field*Year+(1|Blk), data = topdress)
+
+anova(topdress_crop_model)
+
+topdress_crop_means <- emmeans(topdress_crop_model, spec ='Field')
+topdress_crop_effects <- contrast(topdress_crop_means, method = 'pairwise', adjust = "tukey")
+cld(topdress_crop_means)
+summary(topdress_crop_effects)
+
+#soil FNR
+topdress_soil_model <- lmer(soil_recovery_fert_N_percent~Field*Year+(1|Blk), data = topdress)
+
+anova(topdress_soil_model)
+
+topdress_soil_means <- emmeans(topdress_soil_model, spec ='Field')
+topdress_soil_effects <- contrast(topdress_soil_means, method = 'pairwise', adjust = "tukey")
+cld(topdress_soil_means)
+summary(topdress_soil_effects)
 ```

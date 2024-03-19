@@ -131,8 +131,8 @@ ggplot(preplant, aes(x=Days, y=soil_N, color=Field))+
   geom_point(data=preplant_soilN_graphing, size=2.5)+
   geom_smooth(method = lm, alpha=0)+
   scale_color_manual(values=c("#0072B2","#FFCC66"), name = "Field", labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
-  scale_x_continuous(name="Days after seeding", limits = c(20, 140), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
-  scale_y_continuous(name=expression("Soil N uptake (kg N ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
+  scale_x_continuous(name="Days after seeding", limits = c(0, 140), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
+  scale_y_continuous(name=expression("N uptake (kg N ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
   geom_errorbar(data=preplant_soilN_graphing, aes(ymin=soil_N-soil_N_sd, ymax=soil_N+soil_N_sd), width=3)+
   #geom_vline(xintercept = c(41, 50, 78, 84, 121, 136), linetype = "dashed", color = "black") +
   theme_classic()+
@@ -148,14 +148,13 @@ ggplot(preplant, aes(x=Days, y=soil_N, color=Field))+
   vjust = 0  # Adjust vertical position of asterisks
 )+
   annotate(
-  "text",
-  x = c(80),  # X-axis positions for annotations
-  y = c(140),  # Y-axis positions for annotations
-  label = "Preplant soil N uptake",
-  size = 7,
-  vjust = 0  # Adjust vertical position of asterisks
-)
-
+    "text",
+    x = c(80),
+    y = c(140),
+    label = expression(paste("Preplant N uptake"[soil])),
+    size = 7,
+    vjust = 0
+  )
 preplant_soil_N_graph
 
 ggsave(preplant_soil_N_graph, filename = "preplant_soil_N_graph.png", height = 15, width = 20, units = "cm", dpi = 1000)
@@ -198,8 +197,8 @@ ggplot(preplant, aes(x=Days, y=fertiliser_N, color=Field))+
   geom_point(data=preplant_fertiliser_N_graphing, size=2.5)+
   geom_smooth(method = lm, alpha=0)+
   scale_color_manual(values=c("#0072B2","#FFCC66"), name = "Field", labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
-  scale_x_continuous(name="Days after seeding", limits = c(20, 140), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
-  scale_y_continuous(name=expression("Fertilizer N uptake (kg N ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
+  scale_x_continuous(name="Days after seeding", limits = c(0, 140), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
+  scale_y_continuous(name=expression("N uptake (kg N ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
   geom_errorbar(data=preplant_fertiliser_N_graphing, aes(ymin=fertiliser_N-fertiliser_N_sd, ymax=fertiliser_N+fertiliser_N_sd), width=3,position=position_dodge(0.5))+
   #geom_vline(xintercept = c(41, 50, 78, 84, 121, 136), linetype = "dashed", color = "black") +
   theme_classic()+
@@ -207,20 +206,21 @@ ggplot(preplant, aes(x=Days, y=fertiliser_N, color=Field))+
   theme(legend.text = element_text(size = 12),legend.title = element_text(size = 14))+
   theme(plot.title = element_text(hjust = 0.5, size = 15))+
   annotate(
-  "text",
-  x = c(80),  # X-axis positions for annotations
-  y = c(140),  # Y-axis positions for annotations
-  label = "Preplant fertilizer N uptake",
-  size = 7,
-  vjust = 0  # Adjust vertical position of asterisks
-)+annotate(
-  "text",
+    "text",
+    x = c(80),
+    y = c(140),
+    label = expression(paste("Preplant N uptake"[fertilizer])),
+    size = 7,
+    vjust = 0
+  )+
+  annotate("text",
   x = c(46),  # X-axis positions for annotations
-  y = c(45),  # Y-axis positions for annotations
+  y = c(50),  # Y-axis positions for annotations
   label = "*",
   size = 8,
   vjust = 0  # Adjust vertical position of asterisks
 )
+
 
 preplant_fertiliser_N_graph
 
@@ -265,7 +265,7 @@ ggplot(topdress, aes(x=Days, y=soil_N, color=Field))+
   geom_smooth(method = lm, alpha=0)+
   scale_color_manual(values=c("#0072B2","#FFCC66"), name = "Field", labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
   scale_x_continuous(name="Days after seeding", limits = c(60, 140), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
-  scale_y_continuous(name=expression("Soil N uptake (kg N ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
+  scale_y_continuous(name=expression("N uptake (kg N ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
   geom_errorbar(data=topdress_soil_N_graphing, aes(ymin=soil_N-soil_N_sd, ymax=soil_N+soil_N_sd), width=3,position=position_dodge(00))+
   #geom_vline(xintercept = c(78, 84, 121, 136), linetype = "dashed", color = "black") +
   theme_classic()+
@@ -280,14 +280,14 @@ ggplot(topdress, aes(x=Days, y=soil_N, color=Field))+
   size = 8,
   vjust = 0  # Adjust vertical position of asterisks
 )+
-  annotate(
-  "text",
-  x = c(100),  # X-axis positions for annotations
-  y = c(140),  # Y-axis positions for annotations
-  label = "Topdress soil N uptake",
-  size = 7,
-  vjust = 0  # Adjust vertical position of asterisks
-)
+    annotate(
+    "text",
+    x = c(100),
+    y = c(140),
+    label = expression(paste("Topdress N uptake"[soil])),
+    size = 7,
+    vjust = 0
+  )
 
 
 topdress_soil_N_graph
@@ -332,7 +332,7 @@ ggplot(topdress, aes(x=Days, y=fertiliser_N, color=Field))+
   geom_smooth(method = lm, alpha=0)+
   scale_color_manual(values=c("#0072B2","#FFCC66"), name = "Field", labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
   scale_x_continuous(name="Days after seeding", limits = c(60, 140), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
-  scale_y_continuous(name=expression("Fertilizer N uptake (kg N ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
+  scale_y_continuous(name=expression("N uptake (kg N ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
   geom_errorbar(data=topdress_fertiliser_N_graphing, aes(ymin=fertiliser_N-fertiliser_N_sd, ymax=fertiliser_N+fertiliser_N_sd), width=3,position=position_dodge(0.5))+
   #geom_vline(xintercept = c(78, 84, 121, 136), linetype = "dashed", color = "black") +
   theme_classic()+
@@ -348,14 +348,14 @@ ggplot(topdress, aes(x=Days, y=fertiliser_N, color=Field))+
   size = 8,
   vjust = 0  # Adjust vertical position of asterisks
 )+
-  annotate(
-  "text",
-  x = c(100),  # X-axis positions for annotations
-  y = c(140),  # Y-axis positions for annotations
-  label = "Topdress fertilizer N uptake",
-  size = 7,
-  vjust = 0  # Adjust vertical position of asterisks
-)
+   annotate(
+    "text",
+    x = c(100),
+    y = c(140),
+    label = expression(paste("Topdress N uptake"[fertilizer])),
+    size = 7,
+    vjust = 0
+  )
 
 topdress_fertiliser_N_graph
 
