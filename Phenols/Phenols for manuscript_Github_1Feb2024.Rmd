@@ -43,6 +43,15 @@ RES <- read_excel("RES_25Jan2024.xlsx", sheet = 1)
 RES <- mutate_if(RES, is.character, as.factor)
 RES$Year <- as.factor(RES$Year)
 
+#convert phenols from mg 100-1g OC to g kg-1 OC
+
+RES$TotalP <- (RES$TotalP)*10
+RES$TotalV <- (RES$TotalV)*10
+RES$TotalC <- (RES$TotalC)*10
+RES$TotalS <- (RES$TotalS)*10
+RES$Total_phenols <- (RES$Total_phenols)*10
+
+
 str(RES)
 ```
 
@@ -89,6 +98,13 @@ summary(Total_phenols_effects_RES)
 Growers <- read_excel("Regional_survey_25Jan2024.xlsx", sheet = 1)
 Growers <- mutate_if(Growers, is.character, as.factor)
 Growers$Year <- as.factor(Growers$Year)
+
+
+Growers$TotalP <- (Growers$TotalP)*10
+Growers$TotalV <- (Growers$TotalV)*10
+Growers$TotalC <- (Growers$TotalC)*10
+Growers$TotalS <- (Growers$TotalS)*10
+Growers$Total_phenols <- (Growers$Total_phenols)*10
 
 str(Growers)
 ```
@@ -151,7 +167,7 @@ ggplot(RES_graphing, aes(x = Type, y = Phenols_level, fill = Field)) +
   geom_bar(stat = "identity", position = "dodge", width = 0.7) +
   labs(x = "Type", y = "Phenols_level", fill = "Field") +
   scale_fill_manual(values = c("#0072B2","#FFCC66"),labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
-  scale_y_continuous(name=expression("Phenols level (mg 100g"^{-1}*" OC)"), limits = c(0,3), expand = c(0, 0))+
+  scale_y_continuous(name=expression("Phenols level (g kg"^{-1}*" OC)"), limits = c(0,25), expand = c(0, 0))+
   scale_x_discrete(name="", labels = c("Total phenols", "Cinnamic phenols", "p-hydroxybenzyl phenols", "Syringyl phenols", "Vanillyl phenols"))+
   theme_classic() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size= 12))+
@@ -160,7 +176,7 @@ ggplot(RES_graphing, aes(x = Type, y = Phenols_level, fill = Field)) +
     annotate(
   "text",
   x = c(1,2,5),  # X-axis positions for annotations
-  y = c(2.1,0.65,0.65),  # Y-axis positions for annotations
+  y = c(21,6.5,6.5),  # Y-axis positions for annotations
   label = "*",
   size = 8,
   vjust = 0  # Adjust vertical position of asterisks
@@ -168,7 +184,7 @@ ggplot(RES_graphing, aes(x = Type, y = Phenols_level, fill = Field)) +
   annotate(
   "text",
   x = c(3),  # X-axis positions for annotations
-  y = c(2.8),  # Y-axis positions for annotations
+  y = c(22),  # Y-axis positions for annotations
   label = "RES",
   size = 5,
   vjust = 0  
@@ -186,7 +202,7 @@ ggplot(Growers_Graphing, aes(x = Type, y = Phenols_level, fill = Field)) +
   geom_bar(stat = "identity", position = "dodge", width = 0.7) +
   labs(x = "Type", y = "Phenols_level", fill = "Field") +
   scale_fill_manual(values = c("#0072B2","#FFCC66"),labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
-  scale_y_continuous(name=expression("Phenols level (mg 100g"^{-1}*" OC)"), limits = c(0,3), expand = c(0, 0))+
+  scale_y_continuous(name=expression("Phenols level (g kg"^{-1}*" OC)"), limits = c(0,25), expand = c(0, 0))+
   scale_x_discrete(name="", labels = c("Total phenols", "Cinnamic phenols", "p-hydroxybenzyl phenols", "Syringyl phenols", "Vanillyl phenols"))+
   theme_classic() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size= 12))+
@@ -195,7 +211,7 @@ ggplot(Growers_Graphing, aes(x = Type, y = Phenols_level, fill = Field)) +
     annotate(
   "text",
   x = c(1,2,3,4,5),  # X-axis positions for annotations
-  y = c(2.4,0.8,0.3,1,0.7),  # Y-axis positions for annotations
+  y = c(23,8,3,10,7),  # Y-axis positions for annotations
   label = "*",
   size = 8,
   vjust = 0  # Adjust vertical position of asterisks
@@ -203,7 +219,7 @@ ggplot(Growers_Graphing, aes(x = Type, y = Phenols_level, fill = Field)) +
   annotate(
   "text",
   x = c(3),  # X-axis positions for annotations
-  y = c(2.8),  # Y-axis positions for annotations
+  y = c(22),  # Y-axis positions for annotations
   label = "Regional survey study",
   size = 5,
   vjust = 0  
