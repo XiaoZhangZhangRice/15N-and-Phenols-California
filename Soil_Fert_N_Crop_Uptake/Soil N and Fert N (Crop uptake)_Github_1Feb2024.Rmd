@@ -31,6 +31,7 @@ library(GGally)
 library(formatR)
 library(readxl)
 library(mgcv)
+library(writexl)
 
 ```
 
@@ -116,13 +117,13 @@ cld(preplant_soil_N_means)
 ```
 > Preplant soil N uptake different at all 3 sampling timepoints.
 
-## Graphing preplant soil_N mean and SD
+## Graphing preplant soil_N mean and SE
 
 ```{r}
 preplant_soilN_graphing <- preplant %>% group_by(Field, Days) %>%  
-  mutate(soil_N_sd = sd(soil_N)) %>%   
+  mutate(soil_N_se = sd(soil_N)/sqrt(3)) %>%   
   summarise(soil_N = mean(soil_N),
-            soil_N_sd = mean(soil_N_sd))
+            soil_N_se = mean(soil_N_se))
 ```
 
 ```{r}
@@ -133,7 +134,7 @@ ggplot(preplant, aes(x=Days, y=soil_N, color=Field))+
   scale_color_manual(values=c("#0072B2","#FFCC66"), name = "Field", labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
   scale_x_continuous(name="Days after seeding", limits = c(0, 140), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
   scale_y_continuous(name=expression("N uptake (kg N ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
-  geom_errorbar(data=preplant_soilN_graphing, aes(ymin=soil_N-soil_N_sd, ymax=soil_N+soil_N_sd), width=3)+
+  geom_errorbar(data=preplant_soilN_graphing, aes(ymin=soil_N-soil_N_se, ymax=soil_N+soil_N_se), width=3)+
   #geom_vline(xintercept = c(41, 50, 78, 84, 121, 136), linetype = "dashed", color = "black") +
   theme_classic()+
   theme(axis.text = element_text(size = 14), axis.title = element_text(size=16))+
@@ -182,13 +183,13 @@ cld(preplant_fert_N_means)
 
 > Preplant Fert N appears to only be different at PI. 
 
-## Graphing preplant fert_N mean and SD
+## Graphing preplant fert_N mean and SE
 
 ```{r}
 preplant_fertiliser_N_graphing <- preplant %>% group_by(Field, Days) %>%  
-  mutate(fertiliser_N_sd = sd(fertiliser_N)) %>%   
+  mutate(fertiliser_N_se = sd(fertiliser_N)/sqrt(3)) %>%   
   summarise(fertiliser_N = mean(fertiliser_N),
-            fertiliser_N_sd = mean(fertiliser_N_sd))
+            fertiliser_N_se = mean(fertiliser_N_se))
 ```
 
 ```{r}
@@ -199,7 +200,7 @@ ggplot(preplant, aes(x=Days, y=fertiliser_N, color=Field))+
   scale_color_manual(values=c("#0072B2","#FFCC66"), name = "Field", labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
   scale_x_continuous(name="Days after seeding", limits = c(0, 140), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
   scale_y_continuous(name=expression("N uptake (kg N ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
-  geom_errorbar(data=preplant_fertiliser_N_graphing, aes(ymin=fertiliser_N-fertiliser_N_sd, ymax=fertiliser_N+fertiliser_N_sd), width=3,position=position_dodge(0.5))+
+  geom_errorbar(data=preplant_fertiliser_N_graphing, aes(ymin=fertiliser_N-fertiliser_N_se, ymax=fertiliser_N+fertiliser_N_se), width=3,position=position_dodge(0.5))+
   #geom_vline(xintercept = c(41, 50, 78, 84, 121, 136), linetype = "dashed", color = "black") +
   theme_classic()+
   theme(axis.text = element_text(size = 14), axis.title = element_text(size=16))+
@@ -249,13 +250,13 @@ cld(topdress_soil_N_means)
 ```
 
 
-## Graphing topdress soil_N mean and SD
+## Graphing topdress soil_N mean and SE
 
 ```{r}
 topdress_soil_N_graphing <- topdress %>% group_by(Field, Days) %>%  
-  mutate(soil_N_sd = sd(soil_N)) %>%   
+  mutate(soil_N_se = sd(soil_N)/sqrt(3)) %>%   
   summarise(soil_N = mean(soil_N),
-            soil_N_sd = mean(soil_N_sd))
+            soil_N_se = mean(soil_N_se))
 ```
 
 ```{r}
@@ -266,7 +267,7 @@ ggplot(topdress, aes(x=Days, y=soil_N, color=Field))+
   scale_color_manual(values=c("#0072B2","#FFCC66"), name = "Field", labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
   scale_x_continuous(name="Days after seeding", limits = c(60, 140), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
   scale_y_continuous(name=expression("N uptake (kg N ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
-  geom_errorbar(data=topdress_soil_N_graphing, aes(ymin=soil_N-soil_N_sd, ymax=soil_N+soil_N_sd), width=3,position=position_dodge(00))+
+  geom_errorbar(data=topdress_soil_N_graphing, aes(ymin=soil_N-soil_N_se, ymax=soil_N+soil_N_se), width=3,position=position_dodge(00))+
   #geom_vline(xintercept = c(78, 84, 121, 136), linetype = "dashed", color = "black") +
   theme_classic()+
   theme(axis.text = element_text(size = 14), axis.title = element_text(size=16))+
@@ -316,13 +317,13 @@ cld(topdress_fert_N_means)
 
 > Preplant fert N uptake different at heading and maturity. 
 
-## Graphing topdress fert_N mean and SD
+## Graphing topdress fert_N mean and SE
 
 ```{r}
 topdress_fertiliser_N_graphing <- topdress %>% group_by(Field, Days) %>%  
-  mutate(fertiliser_N_sd = sd(fertiliser_N)) %>%   
+  mutate(fertiliser_N_se = sd(fertiliser_N)/sqrt(3)) %>%   
   summarise(fertiliser_N = mean(fertiliser_N),
-            fertiliser_N_sd = mean(fertiliser_N_sd))
+            fertiliser_N_se = mean(fertiliser_N_se))
 ```
 
 ```{r}
@@ -333,7 +334,7 @@ ggplot(topdress, aes(x=Days, y=fertiliser_N, color=Field))+
   scale_color_manual(values=c("#0072B2","#FFCC66"), name = "Field", labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
   scale_x_continuous(name="Days after seeding", limits = c(60, 140), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
   scale_y_continuous(name=expression("N uptake (kg N ha"^{-1}*")"), limits = c(0, 150), expand = c(0, 0), breaks = seq(0, 150, by = 20))+
-  geom_errorbar(data=topdress_fertiliser_N_graphing, aes(ymin=fertiliser_N-fertiliser_N_sd, ymax=fertiliser_N+fertiliser_N_sd), width=3,position=position_dodge(0.5))+
+  geom_errorbar(data=topdress_fertiliser_N_graphing, aes(ymin=fertiliser_N-fertiliser_N_se, ymax=fertiliser_N+fertiliser_N_se), width=3,position=position_dodge(0.5))+
   #geom_vline(xintercept = c(78, 84, 121, 136), linetype = "dashed", color = "black") +
   theme_classic()+
   theme(axis.text = element_text(size = 14), axis.title = element_text(size=16))+
@@ -368,5 +369,17 @@ ggsave(topdress_fertiliser_N_graph, filename = "topdress_fertiliser_N_graph.png"
 all_data$total_N <- all_data$fertiliser_N + all_data$soil_N
 
 all_data %>% group_by(Topdress, Stage, Field) %>% summarise(total_N = mean(total_N))
+```
+
+```{r}
+preplant_all <- cbind(preplant_soilN_graphing,
+                   preplant_fertiliser_N_graphing %>% ungroup()%>% select(-Days, -Field) %>% mutate(Topdress = "Preplant"))
+
+topdress_all <- cbind(topdress_soil_N_graphing,
+                   topdress_fertiliser_N_graphing %>% ungroup()%>% select(-Days, -Field) %>% mutate(Topdress = "Topdress"))
+
+for_excel <- rbind(preplant_all, topdress_all)
+
+write_xlsx(for_excel, "fert_soil_N_by_trt_and_topdress.xlsx")
 ```
 

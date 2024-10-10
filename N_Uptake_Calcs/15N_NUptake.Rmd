@@ -1,0 +1,104 @@
+Necessary libraries
+
+```{r echo=FALSE,message=FALSE,warning=FALSE}
+library(ggplot2)
+theme_set(theme_bw())
+library(emmeans)
+library(multcomp)
+library(PLS205)
+library(lme4)
+library(lmerTest)
+library(multcompView)
+library(car)
+library(Rmisc) 
+library(dplyr) #https://r4ds.had.co.nz/ (Chapter 3, Chapter 5, look at filter and select)
+library(stringr) 
+library(readxl)
+library(writexl)
+```
+
+# 15N
+
+## Calculations
+
+### N uptake
+
+```{r}
+#read data
+enrichedN = read_excel('SIF_15N_TotalN_Weights.xlsx', sheet = 1)
+
+
+str(enrichedN)
+
+table(enrichedN$Stage)
+table(enrichedN$Field)
+table(enrichedN$Topdress)
+table(enrichedN$Blk)
+
+#dataset looks good and complete
+```
+
+```{r}
+#change data
+enrichedN$Blk = as.factor(enrichedN$Blk)
+
+
+enrichedN$Stage_Topdress <- paste(enrichedN$Stage, enrichedN$Topdress, sep='_')
+enrichedN$Stage_Topdress <- as.factor(enrichedN$Stage_Topdress)
+
+str(enrichedN)
+table(enrichedN$Stage_Topdress)
+```
+
+
+```{r}
+#Getting: g N per g of microbalanced sample (g/g)
+
+enrichedN$N_per_g_microbalanced_sample <- ((enrichedN$SIF_N_µg)/(enrichedN$Sample_Weight_mg))/1000
+
+str(enrichedN)
+```
+
+```{r}
+#Total N uptake = g N per g of microbalanced sample (g/g)*total sample weight (g)/area harvested (m2) 
+#then scale from g/m2 to kg/ha
+
+area_hervested_15N <- pi*(0.381)^2
+
+enrichedN$N_total_kgha <- ((enrichedN$N_per_g_microbalanced_sample * enrichedN$Dry_Sample_Weight_g)/1000) * (10000/area_hervested_15N)
+
+str(enrichedN)
+
+```
+
+### Calculating 15N 
+
+```{r}
+#Remove background N
+
+
+#〖N uptake〗_fertilizer=((_^15)N  detected(%)-(_^15)N  background (%))/(10.1%- (_^15)N  natural abundance (%))×〖N uptake〗_total  (kg N 〖ha〗^(-1))
+
+
+# numerator 
+
+backgroundN_percent <- mean(0.36763, 0.36717, 0.36752,0.36756,0.36775, 0.36726,0.36747,0.36750,0.36754,0.36764,0.36734,0.36723,0.36746,0.36731,0.36739,0.36716,0.36709,0.36712)
+
+enrichedN$enrichedN_percent_no_background <- enrichedN$enrichedN_percent - backgroundN_percent
+
+# denominator
+
+fertilizer_without_background <- 10.1-0.3663
+
+# full equation
+
+enrichedN$fertiliser_N <- (enrichedN$enrichedN_percent_no_background)/(10.1-0.3663)*(enrichedN$N_total_kgha)
+
+
+
+enrichedN$soil_N <- (enrichedN$N_total - enrichedN$fertiliser_N)
+
+str(enrichedN)
+
+write_xlsx(enrichedN, "soil_fertN.xlsx")
+```

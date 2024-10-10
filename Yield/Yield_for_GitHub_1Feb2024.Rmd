@@ -99,9 +99,9 @@ Create dataframe for error bars
 
 ```{r}
 preplant_graphing <- preplant %>% group_by(Field, Year) %>% 
-   mutate(yield_sd = sd(Yield)) %>% 
+   mutate(yield_se = sd(Yield)/sqrt(3)) %>% 
   summarise(Yield = mean(Yield),
-            yield_sd = mean(yield_sd))
+            yield_se = mean(yield_se))
 ```
 
 ```{r}
@@ -110,7 +110,7 @@ preplant_yield_graph <-
   geom_bar(stat = "identity", position = "dodge", width = 0.7) +
   labs(x = "Year", y = "Yield", fill = "Field") +
   scale_fill_manual(values = c("#0072B2","#FFCC66"),labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
-  geom_errorbar(aes(ymin=Yield-yield_sd, ymax=Yield+yield_sd), width=.2,position=position_dodge(0.7))+
+  geom_errorbar(aes(ymin=Yield-yield_se, ymax=Yield+yield_se), width=.2,position=position_dodge(0.7))+
   scale_y_continuous(name=expression("Yield (Mg ha"^{-1}*")"), limits = c(0, 20), expand = c(0, 0))+
   scale_x_discrete(name="")+
   theme_classic()+
@@ -166,9 +166,9 @@ Create graphing dataframe
 
 ```{r}
 topdress_graphing <- topdress %>% group_by(Field, Year) %>% 
-   mutate(yield_sd = sd(Yield)) %>% 
+   mutate(yield_se = sd(Yield)/sqrt(3)) %>% 
   summarise(Yield = mean(Yield),
-            yield_sd = mean(yield_sd))
+            yield_se = mean(yield_se))
 ```
 
 ```{r}
@@ -177,7 +177,7 @@ topdress_yield_graph <-
   geom_bar(stat = "identity", position = "dodge", width = 0.7) +
   labs(x = "Year", y = "Yield", fill = "Field") +
   scale_fill_manual(values = c("#0072B2","#FFCC66"),labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
-  geom_errorbar(aes(ymin=Yield-yield_sd, ymax=Yield+yield_sd), width=.2,position=position_dodge(0.7))+
+  geom_errorbar(aes(ymin=Yield-yield_se, ymax=Yield+yield_se), width=.2,position=position_dodge(0.7))+
   scale_y_continuous(name=expression("Yield (Mg ha"^{-1}*")"), limits = c(0, 20), expand = c(0, 0))+
   scale_x_discrete(name="")+
   theme_classic()+
