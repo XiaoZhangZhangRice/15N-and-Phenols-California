@@ -121,7 +121,7 @@ cld(preplant_soil_N_means)
 
 ```{r}
 preplant_soilN_graphing <- preplant %>% group_by(Field, Days) %>%  
-  mutate(soil_N_se = sd(soil_N)/sqrt(3)) %>%   
+  mutate(soil_N_se = sd(soil_N)/sqrt(6)) %>%   
   summarise(soil_N = mean(soil_N),
             soil_N_se = mean(soil_N_se))
 ```
@@ -187,7 +187,7 @@ cld(preplant_fert_N_means)
 
 ```{r}
 preplant_fertiliser_N_graphing <- preplant %>% group_by(Field, Days) %>%  
-  mutate(fertiliser_N_se = sd(fertiliser_N)/sqrt(3)) %>%   
+  mutate(fertiliser_N_se = sd(fertiliser_N)/sqrt(6)) %>%   
   summarise(fertiliser_N = mean(fertiliser_N),
             fertiliser_N_se = mean(fertiliser_N_se))
 ```
@@ -254,7 +254,7 @@ cld(topdress_soil_N_means)
 
 ```{r}
 topdress_soil_N_graphing <- topdress %>% group_by(Field, Days) %>%  
-  mutate(soil_N_se = sd(soil_N)/sqrt(3)) %>%   
+  mutate(soil_N_se = sd(soil_N)/sqrt(6)) %>%   
   summarise(soil_N = mean(soil_N),
             soil_N_se = mean(soil_N_se))
 ```
@@ -321,7 +321,7 @@ cld(topdress_fert_N_means)
 
 ```{r}
 topdress_fertiliser_N_graphing <- topdress %>% group_by(Field, Days) %>%  
-  mutate(fertiliser_N_se = sd(fertiliser_N)/sqrt(3)) %>%   
+  mutate(fertiliser_N_se = sd(fertiliser_N)/sqrt(6)) %>%   
   summarise(fertiliser_N = mean(fertiliser_N),
             fertiliser_N_se = mean(fertiliser_N_se))
 ```
