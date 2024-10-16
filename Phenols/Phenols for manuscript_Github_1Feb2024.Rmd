@@ -167,7 +167,7 @@ ggplot(RES_graphing, aes(x = Type, y = Phenols_level, fill = Field)) +
   geom_bar(stat = "identity", position = "dodge", width = 0.7) +
   labs(x = "Type", y = "Phenols_level", fill = "Field") +
   scale_fill_manual(values = c("#0072B2","#FFCC66"),labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
-  scale_y_continuous(name=expression("Phenols level (g kg"^{-1}*" OC)"), limits = c(0,25), expand = c(0, 0))+
+  scale_y_continuous(name=expression("Phenol levels (g kg"^{-1}*" OC)"), limits = c(0,25), expand = c(0, 0))+
   scale_x_discrete(name="", labels = c("Total phenols", "Cinnamic phenols", "p-hydroxybenzoic phenols", "Syringyl phenols", "Vanillyl phenols"))+
   theme_classic() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size= 12))+
@@ -202,7 +202,7 @@ ggplot(Growers_Graphing, aes(x = Type, y = Phenols_level, fill = Field)) +
   geom_bar(stat = "identity", position = "dodge", width = 0.7) +
   labs(x = "Type", y = "Phenols_level", fill = "Field") +
   scale_fill_manual(values = c("#0072B2","#FFCC66"),labels = c("Continuous rice (CR)", "Fallow rice (FR)"))+
-  scale_y_continuous(name=expression("Phenols level (g kg"^{-1}*" OC)"), limits = c(0,25), expand = c(0, 0))+
+  scale_y_continuous(name=expression("Phenol levels (g kg"^{-1}*" OC)"), limits = c(0,25), expand = c(0, 0))+
   scale_x_discrete(name="", labels = c("Total phenols", "Cinnamic phenols", "p-hydroxybenzoic phenols", "Syringyl phenols", "Vanillyl phenols"))+
   theme_classic() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size= 12))+
