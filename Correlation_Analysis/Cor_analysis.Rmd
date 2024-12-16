@@ -1,0 +1,151 @@
+---
+title: "Correlation Analysis of Phenols and N availability"
+author: "Zhang Zhenglin"
+output:
+  pdf_document:
+    toc: yes
+editor_options:
+  markdown:
+    wrap: sentence
+---
+
+# Necessary libraries
+
+```{r message=FALSE,warning=FALSE}
+library(knitr)
+library(ggplot2)
+theme_set(theme_bw())
+library(emmeans)
+library(multcomp)
+library(PLS205)
+library(lme4)
+library(lmerTest)
+library(multcompView)
+library(car)
+library(Rmisc) 
+library(dplyr) #https://r4ds.had.co.nz/ (Chapter 3, Chapter 5, look at filter and select)
+# https://bookdown.org/ansellbr/WEHI_tidyR_course_book/
+library(stringr) 
+library(data.table)
+library(GGally)
+library(formatR)
+library(readxl)
+library(mgcv)
+library(writexl)
+```
+
+# Data Organisation
+
+## Read from excel
+
+```{r}
+preplant <- read_excel("Cor_Base.xlsx", sheet = 1)
+str(preplant)
+
+topdress <- read_excel("Cor_Base.xlsx", sheet = 2)
+str(topdress)
+
+#cor_data_preplant <- preplant%>%select(-Field,-Blk_Site,-Blk,-Year)
+#cor_data_topdress <- topdress%>%select(-Field,-Blk_Site,-Blk,-Year)
+
+cor_data_preplant <- preplant%>%select(-Blk_Site,-Blk,-Year)
+cor_data_topdress <- topdress%>%select(-Blk_Site,-Blk,-Year)
+```
+
+# Correlation matrix (with raw and absolute values)
+
+# Delinated by field
+
+```{r}
+preplant_cor_matrix <-ggpairs(cor_data_preplant, aes(col=Field, alpha=0.5))+
+    ggtitle("(a) Absolute_Preplant") +
+    theme(plot.title = element_text(size = 30, face = "bold"))
+
+topdress_cor_matrix <-ggpairs(cor_data_topdress, aes(col=Field, alpha=0.5))+
+    ggtitle("(c) Absolute_Topdress") +
+    theme(plot.title = element_text(size = 30, face = "bold"))
+
+
+ggsave(preplant_cor_matrix, filename = "huehue_preplant.pdf", height = 30, width = 30, units = "cm")
+ggsave(topdress_cor_matrix, filename = "huehue_topdress.pdf", height = 30, width = 30, units = "cm")
+```
+
+# all together
+
+```{r}
+all_preplant_cor_matrix <-ggpairs(cor_data_preplant %>% select(-Field))
+all_topdress_cor_matrix <-ggpairs(cor_data_topdress %>% select(-Field))
+
+ggsave(all_preplant_cor_matrix, filename = "all_preplant.pdf", height = 30, width = 30, units = "cm")
+ggsave(all_topdress_cor_matrix, filename = "all_topdress.pdf", height = 30, width = 30, units = "cm")
+```
+
+# Correlation matrix (with differences, obtained betweent treatments by blk)
+
+## Obtain differences by blk and year
+
+## For preplant
+
+```{r}
+difference_preplant <- preplant %>%
+  group_by(Year, Blk) %>%                # Group by Year and Blk
+  filter(all(c("CR", "RF") %in% Field)) %>%  # Ensure both "CR" and "RF" exist
+  summarise(
+    TotalP = TotalP[Field == "CR"] - TotalP[Field == "RF"],
+    TotalIV = TotalV[Field == "CR"] - TotalV[Field == "RF"],
+    TotalC = TotalC[Field == "CR"] - TotalC[Field == "RF"],
+    TotalS = TotalS[Field == "CR"] - TotalS[Field == "RF"],
+    Total_phenols = Total_phenols[Field == "CR"] - Total_phenols[Field == "RF"],
+    crop_fertiliser_N = crop_fertiliser_N[Field == "CR"] - crop_fertiliser_N[Field == "RF"],
+    crop_soil_N = crop_soil_N[Field == "CR"] - crop_soil_N[Field == "RF"],
+    soil_tracer_N = soil_tracer_N[Field == "CR"] - soil_tracer_N[Field == "RF"],
+    yield = yield[Field == "CR"] - yield[Field == "RF"]
+  ) %>%
+  ungroup() 
+```
+
+## For topdress
+
+```{r}
+difference_topdress <- topdress %>%
+  group_by(Year, Blk) %>%                # Group by Year and Blk
+  filter(all(c("CR", "RF") %in% Field)) %>%  # Ensure both "CR" and "RF" exist
+  summarise(
+    TotalP = TotalP[Field == "CR"] - TotalP[Field == "RF"],
+    TotalIV = TotalV[Field == "CR"] - TotalV[Field == "RF"],
+    TotalC = TotalC[Field == "CR"] - TotalC[Field == "RF"],
+    TotalS = TotalS[Field == "CR"] - TotalS[Field == "RF"],
+    Total_phenols = Total_phenols[Field == "CR"] - Total_phenols[Field == "RF"],
+    crop_fertiliser_N = crop_fertiliser_N[Field == "CR"] - crop_fertiliser_N[Field == "RF"],
+    crop_soil_N = crop_soil_N[Field == "CR"] - crop_soil_N[Field == "RF"],
+    soil_tracer_N = soil_tracer_N[Field == "CR"] - soil_tracer_N[Field == "RF"],
+    yield = yield[Field == "CR"] - yield[Field == "RF"]
+  ) %>%
+  ungroup()
+```
+
+## Remove unneeded columns
+
+```{r}
+cor_data_difference_preplant <- difference_preplant%>%select(-Blk,-Year)
+cor_data_difference_topdress <- difference_topdress%>%select(-Blk,-Year)
+```
+
+
+## all together
+
+```{r}
+all_difference_preplant_cor_matrix <-ggpairs(cor_data_difference_preplant) + 
+  ggtitle("(b) Difference_Preplant") +
+  theme(plot.title = element_text(size = 30, face = "bold"))
+
+
+all_difference_topdress_cor_matrix <-ggpairs(cor_data_difference_topdress) + 
+  ggtitle("(d) Difference_Topdress")+
+  theme(plot.title = element_text(size = 30, face = "bold"))
+
+ggsave(all_difference_preplant_cor_matrix, filename = "all_difference_preplant.pdf", height = 30, width = 30, units = "cm")
+ggsave(all_difference_topdress_cor_matrix, filename = "all_difference_topdress.pdf", height = 30, width = 30, units = "cm")
+```
+
+
