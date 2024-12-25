@@ -66,18 +66,29 @@ topdress_cor_matrix <-ggpairs(cor_data_topdress, aes(col=Field, alpha=0.5))+
     theme(plot.title = element_text(size = 30, face = "bold"))
 
 
-ggsave(preplant_cor_matrix, filename = "huehue_preplant.pdf", height = 30, width = 30, units = "cm")
-ggsave(topdress_cor_matrix, filename = "huehue_topdress.pdf", height = 30, width = 30, units = "cm")
+#ggsave(preplant_cor_matrix, filename = "huehue_preplant.pdf", height = 30, width = 30, units = "cm")
+#ggsave(topdress_cor_matrix, filename = "huehue_topdress.pdf", height = 30, width = 30, units = "cm")
 ```
 
 # all together
 
 ```{r}
-all_preplant_cor_matrix <-ggpairs(cor_data_preplant %>% select(-Field))
-all_topdress_cor_matrix <-ggpairs(cor_data_topdress %>% select(-Field))
+all_preplant_cor_matrix <-ggpairs(cor_data_preplant %>% select(-Field, -yield_Mgha), 
+                                  upper = list(continuous = wrap("cor", size = 5.5))
+                                  )+
+                          ggtitle("(a) Preplant") +
+                          theme(plot.title = element_text(size = 30, face = "bold"))
 
-ggsave(all_preplant_cor_matrix, filename = "all_preplant.pdf", height = 30, width = 30, units = "cm")
-ggsave(all_topdress_cor_matrix, filename = "all_topdress.pdf", height = 30, width = 30, units = "cm")
+
+all_topdress_cor_matrix <-ggpairs(cor_data_topdress %>% select(-Field, -yield_Mgha), 
+                                  upper = list(continuous = wrap("cor", size = 5.5))
+                                  )+
+                          ggtitle("(b) Topdress") +
+                          theme(plot.title = element_text(size = 30, face = "bold"))
+                        
+
+ggsave(all_preplant_cor_matrix, filename = "all_preplant.png", height = 34, width = 33, units = "cm", dpi = 400)
+ggsave(all_topdress_cor_matrix, filename = "all_topdress.png", height = 34, width = 33, units = "cm", dpi = 400)
 ```
 
 # Correlation matrix (with differences, obtained betweent treatments by blk)
@@ -86,7 +97,7 @@ ggsave(all_topdress_cor_matrix, filename = "all_topdress.pdf", height = 30, widt
 
 ## For preplant
 
-```{r}
+
 difference_preplant <- preplant %>%
   group_by(Year, Blk) %>%                # Group by Year and Blk
   filter(all(c("CR", "RF") %in% Field)) %>%  # Ensure both "CR" and "RF" exist
@@ -102,11 +113,11 @@ difference_preplant <- preplant %>%
     yield = yield[Field == "CR"] - yield[Field == "RF"]
   ) %>%
   ungroup() 
-```
+
 
 ## For topdress
 
-```{r}
+
 difference_topdress <- topdress %>%
   group_by(Year, Blk) %>%                # Group by Year and Blk
   filter(all(c("CR", "RF") %in% Field)) %>%  # Ensure both "CR" and "RF" exist
@@ -122,19 +133,17 @@ difference_topdress <- topdress %>%
     yield = yield[Field == "CR"] - yield[Field == "RF"]
   ) %>%
   ungroup()
-```
 
 ## Remove unneeded columns
 
-```{r}
+
 cor_data_difference_preplant <- difference_preplant%>%select(-Blk,-Year)
 cor_data_difference_topdress <- difference_topdress%>%select(-Blk,-Year)
-```
 
 
 ## all together
 
-```{r}
+
 all_difference_preplant_cor_matrix <-ggpairs(cor_data_difference_preplant) + 
   ggtitle("(b) Difference_Preplant") +
   theme(plot.title = element_text(size = 30, face = "bold"))
@@ -144,8 +153,9 @@ all_difference_topdress_cor_matrix <-ggpairs(cor_data_difference_topdress) +
   ggtitle("(d) Difference_Topdress")+
   theme(plot.title = element_text(size = 30, face = "bold"))
 
-ggsave(all_difference_preplant_cor_matrix, filename = "all_difference_preplant.pdf", height = 30, width = 30, units = "cm")
-ggsave(all_difference_topdress_cor_matrix, filename = "all_difference_topdress.pdf", height = 30, width = 30, units = "cm")
+#ggsave(all_difference_preplant_cor_matrix, filename = "all_difference_preplant.pdf", height = 30, width = 30, units = "cm")
+#ggsave(all_difference_topdress_cor_matrix, filename = "all_difference_topdress.pdf", height = 30, width = 30, units = "cm")
+
+```{r}
+citation("GGally")
 ```
-
-
